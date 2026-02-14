@@ -651,14 +651,16 @@
     }
 
     function openFile(name) {
-  document.getElementById("fluteSound")?.play().catch(()=>{});
-  fetch(BASE_URL + "/file/" + encodeURIComponent(name), { credentials: "include" })
+  fetch(`${BASE_URL}/file/${encodeURIComponent(name)}`, { credentials: "include" })
     .then(r => r.json())
     .then(d => {
-      if (d.url) window.open(d.url, "_blank");
-      else alert("Cannot open file");
+      if (d.success && d.url) {
+        window.open(d.url, '_blank');
+      } else {
+        alert("Cannot open file: " + (d.error || "Unknown error"));
+      }
     })
-    .catch(() => alert("Cannot open file"));
+    .catch(() => alert("Connection error"));
 }
 
     async function renameFile(oldName) {
