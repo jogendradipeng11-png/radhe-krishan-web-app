@@ -1,177 +1,796 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radhe Krishna File Library</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #fefefe;
-    color: #111;
-    transition: background 0.3s, color 0.3s;
-  }
-  body.dark {
-    background-color: #111;
-    color: #fefefe;
-  }
-  h1 { text-align: center; }
-  form { margin-bottom: 20px; }
-  input, button { margin: 5px 0; padding: 5px; }
-  ul { list-style: none; padding-left: 0; }
-  li { margin-bottom: 10px; }
-  button { margin-left: 5px; }
-  #dark-toggle { position: fixed; top: 10px; right: 10px; cursor: pointer; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Radhe Krishna File Library</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ff7eb3">
+  <meta name="format-detection" content="telephone=no">
+  <style>
+    :root {
+      --bg-light: radial-gradient(circle at top, #ffd6e8 0, #fff 40%, #ffe9b3 100%);
+      --card-light: #ffffff;
+      --text-light: #222;
+      --border-light: #ffd1f0;
+      --bg-dark: #000000;
+      --card-dark: #111111;
+      --text-dark: #f7e9b0;
+      --border-dark: #b8860b;
+      --accent-pink: #ff7eb3;
+      --accent-orange: #ffb347;
+      --accent-gold: #ffd700;
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overscroll-behavior: none;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: background 0.3s ease, color 0.3s ease;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+    .app-container {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      transition: background 0.3s ease, border-color 0.3s ease;
+      margin: 8px;
+      min-height: calc(100vh - 16px);
+    }
+    body.dark .app-container {
+      background: rgba(10, 10, 10, 0.96);
+      border-color: var(--border-dark);
+    }
+    .header {
+      background: linear-gradient(135deg, #ff7eb3, #ff758c, #ffb347);
+      padding: 14px 12px 10px;
+      color: white;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    body.dark .header {
+      background: linear-gradient(135deg, #000000, #2b1b00, #8b6508);
+    }
+    .header-left {
+      flex: 1;
+      min-width: 0;
+    }
+    .header h1 {
+      font-size: 19px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header p {
+      font-size: 11px;
+      opacity: 0.9;
+      margin: 0;
+    }
+    .radhe-tag {
+      position: absolute;
+      right: 12px;
+      top: 8px;
+      background: rgba(255, 255, 255, 0.18);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .rk-image-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    }
+    .rk-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .dark-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .content {
+      padding: 12px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ffe0f2;
+    }
+    body.dark .card {
+      background: #111111;
+      border-color: #3b2a00;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-title span {
+      font-size: 11px;
+      color: #777;
+    }
+    body.dark .card-title span {
+      color: #d2c48a;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    label {
+      font-size: 12px;
+      color: #555;
+    }
+    body.dark label {
+      color: #f0e0a0;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="file"] {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 13px;
+      background: #ffffff;
+      color: #222;
+    }
+    body.dark input {
+      background: #181818;
+      color: #f7e9b0;
+      border-color: #444;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #ff7eb3, #ff758c);
+      color: white;
+    }
+    body.dark .btn-primary {
+      background: linear-gradient(135deg, #8b6508, #ffb347);
+      color: #000;
+    }
+    .btn-secondary {
+      background: #f3f3f3;
+      color: #444;
+    }
+    body.dark .btn-secondary {
+      background: #222;
+      color: #f7e9b0;
+    }
+    .btn-danger {
+      background: #ff4b5c;
+      color: white;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #ddd;
+      color: #444;
+    }
+    body.dark .btn-outline {
+      border-color: #555;
+      color: #f7e9b0;
+    }
+    .btn-small {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    .btn-full {
+      width: 100%;
+    }
+    .login-section,
+    .main-section {
+      display: none;
+    }
+    .login-section.active,
+    .main-section.active {
+      display: block;
+    }
+    .status {
+      font-size: 11px;
+      margin-top: 4px;
+      min-height: 14px;
+    }
+    .status.ok { color: #0a8f3c; }
+    .status.err { color: #d7263d; }
+    body.dark .status.ok { color: #9cffb0; }
+    body.dark .status.err { color: #ff7b7b; }
+    .search-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .search-row input {
+      flex: 1;
+    }
+    .files-list {
+      max-height: 340px;
+      overflow-y: auto;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      padding: 4px;
+    }
+    body.dark .files-list {
+      border-color: #333;
+    }
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 6px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    body.dark .file-item {
+      border-bottom-color: #333;
+    }
+    .file-name {
+      flex: 1;
+      margin-right: 8px;
+      word-break: break-all;
+    }
+    .file-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .voice-btn {
+      font-size: 18px;
+      padding: 8px 12px;
+    }
+    .listening {
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .footer-note {
+      text-align: center;
+      font-size: 11px;
+      color: #777;
+      margin-top: 10px;
+      padding-bottom: 80px;
+    }
+    body.dark .footer-note {
+      color: #d2c48a;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: linear-gradient(135deg, #000, #2b1b00, #8b6508);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid gold;
+      z-index: 9999;
+    }
+    .nav-item {
+      color: gold;
+      font-size: 15px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .nav-item span {
+      font-size: 11px;
+      opacity: 0.85;
+    }
+    @media (max-width: 480px) {
+      .header h1 { font-size: 17px; }
+    }
+  </style>
 </head>
 <body>
+  <div id="splashScreen" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100000;animation:fadeOut 2.4s forwards;">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzkmvy8fiaVGfSpShf3-PGhvbtlgVkswpwyA&s" style="width:240px;height:240px;object-fit:cover;border-radius:50%;box-shadow:0 0 30px gold,0 0 60px #ffb347;animation:popIn 1.4s;">
+    <div style="margin-top:24px;font-size:32px;font-weight:700;color:gold;text-shadow:0 0 16px gold,0 0 32px orange;animation:glowPulse 1.8s infinite alternate;">Radhe Krishna</div>
+  </div>
 
-<h1>Radhe Krishna File Library</h1>
-<p style="text-align:center;">Secure personal document space with voice search</p>
+  <div id="loaderOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:9999;">
+    <div style="text-align:center;color:#ffd700;">
+      <div style="font-size:22px;font-weight:700;letter-spacing:1.2px;text-shadow:0 0 10px rgba(255,215,0,0.9);animation:rkGlow 1.8s infinite alternate;">Radhe Krishna</div>
+      <div style="font-size:14px;margin-top:8px;">Loading your divine files... (ଆପଣଙ୍କ ଫାଇଲ୍ ଲୋଡ୍ ହେଉଛି)</div>
+    </div>
+  </div>
 
-<button id="dark-toggle">☀️ Light/Dark</button>
+  <div class="app-container">
+    <div class="header">
+      <div class="radhe-tag">Radhe Krishna ✨</div>
+      <div class="rk-image-wrap">
+        <img src="https://asset.gecdesigns.com/img/wallpapers/cute-radha-krishna-hd-wallpaper-sr04112404-cover.webp" alt="Radha Krishna">
+      </div>
+      <div class="header-left">
+        <h1>Radhe Krishna File Library</h1>
+        <p>Secure personal document space with voice search</p>
+        <div class="top-bar">
+          <div>Private access (କେବଳ ଆପଣଙ୍କ ପାଇଁ)</div>
+          <div id="darkToggle" class="dark-toggle">
+            <span>☀️</span> <span>Light / Dark</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<hr>
+    <div class="content">
+      <div id="loginSection" class="login-section active card">
+        <div class="card-title">
+          Login (ଲଗିନ୍ କରନ୍ତୁ)
+          <span>Only you can access (କେବଳ ଆପଣଙ୍କ ପାଇଁ)</span>
+        </div>
+        <div class="input-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter username">
+        </div>
+        <div class="input-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter password">
+        </div>
+        <button id="loginBtn" class="btn-primary btn-full">Login (ଲଗିନ୍ କରନ୍ତୁ)</button>
+        <div id="loginStatus" class="status"></div>
+        <div style="margin-top:12px;text-align:center;">
+          <button id="showRegisterBtn" style="background:none;border:none;color:var(--accent-pink);cursor:pointer;">New user? Register here</button>
+        </div>
+      </div>
 
-<!-- LOGIN -->
-<form id="login-form">
-  <input type="text" name="username" placeholder="Username" required>
-  <input type="password" name="password" placeholder="Password" required>
-  <button type="submit">Login</button>
-</form>
+      <div id="registerSection" class="login-section card" style="display:none;">
+        <div class="card-title">
+          Register (ନିବନ୍ଧନ କରନ୍ତୁ)
+          <span>Create your account</span>
+        </div>
+        <div class="input-group">
+          <label for="regUsername">Choose Username</label>
+          <input type="text" id="regUsername" placeholder="Enter username">
+        </div>
+        <div class="input-group">
+          <label for="regPassword">Choose Password</label>
+          <input type="password" id="regPassword" placeholder="Enter password">
+        </div>
+        <button id="registerBtn" class="btn-primary btn-full">Register</button>
+        <div id="registerStatus" class="status"></div>
+        <div style="margin-top:12px;text-align:center;">
+          <button id="showLoginBtn" style="background:none;border:none;color:var(--accent-pink);cursor:pointer;">Already have account? Login</button>
+        </div>
+      </div>
 
-<!-- UPLOAD -->
-<form id="upload-form">
-  <input type="file" id="file-input" required>
-  <button type="submit">Upload</button>
-</form>
+      <div id="mainSection" class="main-section">
+        <div class="card">
+          <div class="card-title">
+            Upload / Rename
+            <span>PDFs, images, docs</span>
+          </div>
+          <div class="input-group">
+            <label for="fileInput">Choose file</label>
+            <input type="file" id="fileInput">
+          </div>
+          <div class="input-group">
+            <label for="fileNameInput">Save as name</label>
+            <input type="text" id="fileNameInput" placeholder="Example: AadhaarCard.pdf">
+          </div>
+          <button id="uploadBtn" class="btn-primary btn-full">Upload</button>
+          <div id="uploadStatus" class="status"></div>
+        </div>
 
-<!-- SEARCH -->
-<input type="text" id="search-input" placeholder="Search files...">
+        <div class="card">
+          <div class="card-title">
+            Your Files
+            <span>Tap to open full screen</span>
+          </div>
+          <div class="search-row">
+            <input type="text" id="searchInput" placeholder="Search files... (ଫାଇଲ୍ ସନ୍ଧାନ...)">
+            <button id="voiceSearchBtn" class="btn-secondary voice-btn" title="Voice search for files">🎤</button>
+          </div>
+          <div id="filesList" class="files-list"></div>
+          <div id="filesStatus" class="status"></div>
+          <div id="voiceStatus" class="status" style="text-align:center; margin-top:8px;"></div>
+        </div>
 
-<!-- FILE LIST -->
-<ul id="files-list"></ul>
+        <div class="card">
+          <button id="voiceCommandBtn" class="btn-primary btn-full" style="font-size:16px;padding:12px;">🎤 Voice Commands (ଭଏସ୍ କମାଣ୍ଡ୍)</button>
+        </div>
 
-<script>
-const API_URL = "https://radhe-krishna-h7lq.onrender.com";
+        <div class="card">
+          <div class="card-title">Change Password</div>
+          <div class="input-group">
+            <label for="oldPassword">Old password</label>
+            <input type="password" id="oldPassword">
+          </div>
+          <div class="input-group">
+            <label for="newPassword">New password</label>
+            <input type="password" id="newPassword">
+          </div>
+          <div class="input-group">
+            <label for="confirmPassword">Confirm new</label>
+            <input type="password" id="confirmPassword">
+          </div>
+          <button id="changePasswordBtn" class="btn-secondary btn-full">Change Password</button>
+          <div id="passwordStatus" class="status"></div>
+        </div>
 
-const loginForm = document.getElementById("login-form");
-const uploadForm = document.getElementById("upload-form");
-const fileInput = document.getElementById("file-input");
-const filesContainer = document.getElementById("files-list");
-const searchInput = document.getElementById("search-input");
-const darkToggle = document.getElementById("dark-toggle");
+        <div class="card">
+          <button id="logoutBtn" class="btn-outline btn-full">Logout (ଲଗ୍ ଆଉଟ୍)</button>
+        </div>
+      </div>
 
-// ===== DARK MODE =====
-darkToggle.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-});
+      <div class="footer-note">
+        <span style="color:#ff5c8a;font-weight:600;">Radhe Krishna</span> • Files stay private
+      </div>
+    </div>
+  </div>
 
-// ===== LOGIN =====
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = loginForm.username.value;
-  const password = loginForm.password.value;
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="scrollToTop()">🏠<br><span>Home</span></div>
+    <div class="nav-item" onclick="document.getElementById('fileInput').click()">⬆️<br><span>Upload</span></div>
+    <div class="nav-item" onclick="loadFiles()">📁<br><span>Files</span></div>
+    <div class="nav-item" onclick="alert('Scroll to Change Password')">⚙️<br><span>Settings</span></div>
+  </div>
 
-  try {
-    const res = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
+  <script>
+    const BASE_URL = "https://radhe-krishna-h7lq.onrender.com";
+    let currentUser = null;
+
+    const loginSection = document.getElementById("loginSection");
+    const registerSection = document.getElementById("registerSection");
+    const mainSection = document.getElementById("mainSection");
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+    const showRegisterBtn = document.getElementById("showRegisterBtn");
+    const showLoginBtn = document.getElementById("showLoginBtn");
+    const loginStatus = document.getElementById("loginStatus");
+    const registerStatus = document.getElementById("registerStatus");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const fileInput = document.getElementById("fileInput");
+    const fileNameInput = document.getElementById("fileNameInput");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const uploadStatus = document.getElementById("uploadStatus");
+    const filesList = document.getElementById("filesList");
+    const searchInput = document.getElementById("searchInput");
+    const voiceSearchBtn = document.getElementById("voiceSearchBtn");
+    const voiceCommandBtn = document.getElementById("voiceCommandBtn");
+    const voiceStatus = document.getElementById("voiceStatus");
+    const darkToggle = document.getElementById("darkToggle");
+
+    function showLoader() { document.getElementById("loaderOverlay").style.display = "flex"; }
+    function hideLoader() { document.getElementById("loaderOverlay").style.display = "none"; }
+
+    // Auto-login
+    window.addEventListener('load', () => {
+      const savedUser = localStorage.getItem('rkLoggedUser');
+      if (savedUser) {
+        currentUser = savedUser;
+        loginSection.classList.remove("active");
+        registerSection.style.display = "none";
+        mainSection.classList.add("active");
+        loadFiles();
+      } else {
+        loginSection.classList.add("active");
+      }
+      setTimeout(() => document.getElementById("splashScreen").style.display = "none", 2400);
     });
-    const data = await res.json();
-    if (data.success) {
-      alert("Login successful");
-      loadFiles();
-    } else {
-      alert("Login failed");
+
+    // Show register form
+    showRegisterBtn.onclick = () => {
+      loginSection.classList.remove("active");
+      registerSection.style.display = "block";
+    };
+
+    // Show login form
+    showLoginBtn.onclick = () => {
+      registerSection.style.display = "none";
+      loginSection.classList.add("active");
+    };
+
+    // Login
+    loginBtn.onclick = async () => {
+      const u = document.getElementById("loginUsername").value.trim();
+      const p = document.getElementById("loginPassword").value.trim();
+      if (!u || !p) return loginStatus.textContent = "Enter username & password";
+
+      showLoader();
+      try {
+        const r = await fetch(BASE_URL + "/login", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({username: u, password: p}),
+          credentials: "include"
+        });
+        const d = await r.json();
+        hideLoader();
+
+        if (d.success) {
+          currentUser = u;
+          localStorage.setItem('rkLoggedUser', u);
+          loginSection.classList.remove("active");
+          mainSection.classList.add("active");
+          loadFiles();
+        } else {
+          loginStatus.textContent = d.error || "Invalid credentials";
+        }
+      } catch {
+        hideLoader();
+        loginStatus.textContent = "Connection error – check backend";
+      }
+    };
+
+    // Register
+    registerBtn.onclick = async () => {
+      const u = document.getElementById("regUsername").value.trim();
+      const p = document.getElementById("regPassword").value.trim();
+      if (!u || !p) return registerStatus.textContent = "Enter username & password";
+
+      showLoader();
+      try {
+        const r = await fetch(BASE_URL + "/register", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({username: u, password: p}),
+          credentials: "include"
+        });
+        const d = await r.json();
+        hideLoader();
+
+        if (d.success) {
+          registerStatus.textContent = "Registered successfully! Now login.";
+          registerStatus.className = "status ok";
+          setTimeout(() => {
+            registerSection.style.display = "none";
+            loginSection.classList.add("active");
+          }, 2000);
+        } else {
+          registerStatus.textContent = d.error || "Registration failed";
+        }
+      } catch {
+        hideLoader();
+        registerStatus.textContent = "Connection error";
+      }
+    };
+
+    // Logout
+    logoutBtn.onclick = () => {
+      localStorage.removeItem('rkLoggedUser');
+      currentUser = null;
+      mainSection.classList.remove("active");
+      loginSection.classList.add("active");
+    };
+
+    // Load files
+    async function loadFiles() {
+      if (!currentUser) return;
+      showLoader();
+      try {
+        const r = await fetch(BASE_URL + "/files", { credentials: "include" });
+        if (!r.ok) throw new Error(`Status ${r.status}`);
+        const files = await r.json();
+        hideLoader();
+        filesList.innerHTML = "";
+        const q = searchInput.value.trim().toLowerCase();
+        const filtered = files.filter(f => f.toLowerCase().includes(q));
+        if (!filtered.length) {
+          filesList.innerHTML = '<div style="padding:10px;text-align:center;color:#888;">No files found</div>';
+          return;
+        }
+        filtered.forEach(name => {
+          const item = document.createElement("div");
+          item.className = "file-item";
+          item.innerHTML = `
+            <div class="file-name">📄 ${name}</div>
+            <div class="file-actions">
+              <button class="btn-primary btn-small" onclick="openFile('${name}')">Open</button>
+              <button class="btn-secondary btn-small" onclick="renameFile('${name}')">Rename</button>
+              <button class="btn-danger btn-small" onclick="deleteFile('${name}')">Delete</button>
+            </div>
+          `;
+          filesList.appendChild(item);
+        });
+      } catch (err) {
+        hideLoader();
+        filesList.innerHTML = '<div style="color:red;padding:10px;">Failed to load files<br>' + err.message + '</div>';
+      }
     }
-  } catch (err) {
-    console.error(err);
-    alert("Login error");
-  }
-});
 
-// ===== UPLOAD =====
-uploadForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const file = fileInput.files[0];
-  if (!file) return alert("Choose a file");
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    const res = await fetch(`${API_URL}/upload`, {
-      method: "POST",
-      credentials: "include",
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Upload successful");
-      fileInput.value = "";
-      loadFiles();
-    } else {
-      alert("Upload failed");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Upload error");
-  }
-});
-
-// ===== LIST FILES =====
-async function loadFiles() {
-  try {
-    const res = await fetch(`${API_URL}/files`, { credentials: "include" });
-    const files = await res.json();
-
-    filesContainer.innerHTML = "";
-    if (!Array.isArray(files)) return;
-
-    files
-      .filter(f => f.toLowerCase().includes(searchInput.value.toLowerCase()))
-      .forEach(f => {
-        const li = document.createElement("li");
-        li.textContent = f;
-
-        const downloadBtn = document.createElement("button");
-        downloadBtn.textContent = "Download";
-        downloadBtn.onclick = async () => {
-          const res = await fetch(`${API_URL}/file/${encodeURIComponent(f)}`, { credentials: "include" });
-          const data = await res.json();
-          if (data.url) window.open(data.url, "_blank");
-        };
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Delete";
-        deleteBtn.onclick = async () => {
-          const res = await fetch(`${API_URL}/file/${encodeURIComponent(f)}`, {
-            method: "DELETE",
-            credentials: "include"
-          });
-          const data = await res.json();
-          if (data.success) loadFiles();
-        };
-
-        li.appendChild(downloadBtn);
-        li.appendChild(deleteBtn);
-        filesContainer.appendChild(li);
-      });
-  } catch (err) {
-    console.error("Failed to fetch files:", err);
-  }
+    function openFile(name) {
+  fetch(`${BASE_URL}/file/${encodeURIComponent(name)}`, { credentials: "include" })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success && d.url) {
+        window.open(d.url, '_blank');
+      } else {
+        alert("Cannot open file: " + (d.error || "Unknown error"));
+      }
+    })
+    .catch(() => alert("Connection error"));
 }
 
-// ===== SEARCH =====
-searchInput.addEventListener("input", loadFiles);
+    async function renameFile(oldName) {
+      const newName = prompt("New name:", oldName);
+      if (!newName || newName === oldName) return;
+      // Optional: implement rename on backend later
+      alert("Rename not implemented yet on backend");
+      loadFiles();
+    }
 
-// ===== INITIAL LOAD =====
-loadFiles();
-</script>
+    async function deleteFile(name) {
+      if (!confirm(`Delete ${name} permanently?`)) return;
+      showLoader();
+      try {
+        const res = await fetch(`${BASE_URL}/file/${encodeURIComponent(name)}`, {
+          method: "DELETE",
+          credentials: "include"
+        });
+        hideLoader();
+        if (res.ok) {
+          loadFiles();
+        } else {
+          alert("Delete failed – " + res.status);
+        }
+      } catch {
+        hideLoader();
+        alert("Cannot delete – connection error");
+      }
+    }
 
+    // Upload
+    uploadBtn.onclick = async () => {
+      const file = fileInput.files[0];
+      let name = fileNameInput.value.trim();
+      if (!file || !name) return uploadStatus.textContent = "Select file and enter name";
+      if (!name.includes(".")) name += "." + (file.name.split(".").pop() || "pdf");
+      const renamed = new File([file], name, {type: file.type});
+      const form = new FormData();
+      form.append("file", renamed);
+      showLoader();
+      try {
+        const r = await fetch(BASE_URL + "/upload", {
+          method: "POST",
+          body: form,
+          credentials: "include"
+        });
+        hideLoader();
+        if (r.ok) {
+          uploadStatus.textContent = "Uploaded!";
+          fileInput.value = "";
+          fileNameInput.value = "";
+          loadFiles();
+        } else {
+          uploadStatus.textContent = "Upload failed – server error";
+        }
+      } catch {
+        hideLoader();
+        uploadStatus.textContent = "Connection error";
+      }
+    };
+
+    // Dark toggle
+    darkToggle.onclick = () => document.body.classList.toggle("dark");
+
+    // Scroll top
+    function scrollToTop() { window.scrollTo({top:0, behavior:"smooth"}); }
+
+    // Swipe gestures
+    let touchStartX = 0, touchEndX = 0;
+    document.addEventListener("touchstart", e => touchStartX = e.changedTouches[0].screenX, {passive:true});
+    document.addEventListener("touchend", e => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 60) loadFiles();
+      if (touchEndX - touchStartX > 60) scrollToTop();
+    }, {passive:true});
+
+    // Voice search
+    voiceSearchBtn.onclick = () => {
+      const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      rec.lang = "en-IN";
+      rec.onresult = e => {
+        searchInput.value = e.results[0][0].transcript;
+        loadFiles();
+      };
+      rec.start();
+    };
+
+    // Voice commands (simplified)
+    let voiceRec = null;
+    voiceCommandBtn.onclick = () => {
+      if (voiceRec) {
+        voiceRec.stop();
+        voiceRec = null;
+        return;
+      }
+      if (!("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
+        alert("Voice not supported");
+        return;
+      }
+      voiceRec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      voiceRec.lang = "or-IN";
+      voiceRec.onstart = () => {
+        voiceStatus.textContent = "Listening... (ଶୁଣୁଛି...)";
+        voiceStatus.classList.add("listening");
+      };
+      voiceRec.onresult = e => {
+        const text = e.results[0][0].transcript.toLowerCase().trim();
+        if (text.includes("ଫାଇଲ୍ ଖୋଲ") || text.includes("open files")) loadFiles();
+        else if (text.includes("ଅପଲୋଡ୍") || text.includes("upload")) fileInput.click();
+        else if (text.includes("ଲଗ୍ ଆଉଟ୍") || text.includes("logout")) logoutBtn.click();
+        else if (text.includes("ଡାର୍କ ମୋଡ୍")) document.body.classList.toggle("dark");
+      };
+      voiceRec.onend = () => {
+        voiceStatus.textContent = "";
+        voiceStatus.classList.remove("listening");
+        voiceRec = null;
+      };
+      voiceRec.start();
+    };
+
+    function speak(txt) {
+      const u = new SpeechSynthesisUtterance(txt);
+      u.lang = "or-IN";
+      window.speechSynthesis.speak(u);
+    }
+
+    searchInput.oninput = loadFiles;
+
+    // Flute sound
+  </script>
+  <audio id="fluteSound" src="https://archive.org/download/om-flute/Om%20Flute.mp3"></audio>
 </body>
 </html>
