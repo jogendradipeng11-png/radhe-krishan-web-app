@@ -234,36 +234,43 @@
       } catch(e) { console.error(e); }
     }
 
-    // UPLOAD FILE
-    document.getElementById("uploadBtn").onclick = async () => {
-      const fileInput = document.getElementById("fileInput");
-      let customName = document.getElementById("fileNameInput").value.trim();
-      if(!fileInput.files.length) return alert("Select a file");
+    // Locate this block inside your index.html file:
+document.getElementById("uploadBtn").onclick = async () => {
+  const fileInput = document.getElementById("fileInput");
+  let customName = document.getElementById("fileNameInput").value.trim();
+  if(!fileInput.files.length) return alert("Select a file first");
 
-      const file = fileInput.files[0];
-      if(!customName) customName = file.name;
-      if(!customName.includes(".")) customName += "." + file.name.split('.').pop();
+  const file = fileInput.files[0];
+  if(!customName) customName = file.name;
+  if(!customName.includes(".")) customName += "." + file.name.split('.').pop();
 
-      const renamedFile = new File([file], customName, { type: file.type });
-      const formData = new FormData();
-      formData.append("file", renamedFile);
+  const renamedFile = new File([file], customName, { type: file.type });
+  const formData = new FormData();
+  formData.append("file", renamedFile); // This key name MUST match upload.single("file")
 
-      showLoader();
-      try {
-        const r = await fetch(`${BASE_URL}/upload`, {
-          method: "POST",
-          headers: { "X-User": getAuthUser() },
-          body: formData
-        });
-        hideLoader();
-        if(r.ok) {
-          document.getElementById("uploadStatus").textContent = "Uploaded successfully!";
-          fileInput.value = "";
-          document.getElementById("fileNameInput").value = "";
-          loadFiles();
-        }
-      } catch(e) { hideLoader(); alert("Upload error."); }
-    };
+  showLoader();
+  try {
+    const r = await fetch(`${BASE_URL}/upload`, {
+      method: "POST",
+      headers: { 
+        "X-User": getAuthUser() 
+        // CRITICAL: DO NOT add "Content-Type" here! Let the browser generate it with the correct boundary wrapper.
+      },
+      body: formData
+    });
+    hideLoader();
+    if(r.ok) {
+      document.getElementById("uploadStatus").textContent = "File safely uploaded!";
+      fileInput.value = "";
+      document.getElementById("fileNameInput").value = "";
+      setTimeout(() => { document.getElementById("uploadStatus").textContent = ""; }, 3000);
+      loadFiles();
+    } else {
+      const errorData = await r.json();
+      alert("Upload failed: " + (errorData.error || "Server issue"));
+    }
+  } catch(e) { hideLoader(); alert("Upload dropped due to connection issue."); }
+};
 
     // OPEN/DOWNLOAD FILE VIA SIGNED S3 PIPELINE
     async function openFile(filename) {
