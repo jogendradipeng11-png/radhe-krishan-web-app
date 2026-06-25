@@ -278,27 +278,48 @@
       } catch(e) { hideLoader(); alert("Upload dropped due to connection issue."); }
     };
 
-    // OPEN/DOWNLOAD FILE VIA SIGNED S3 PIPELINE (UPDATED FOR FORCED DIRECT SAVE)
+    // OPEN/DOWNLOAD FILE VIA SIGNED S3 PIPELINE (FORCED BLOB STREAM DOWNLOAD)
     async function openFile(filename) {
+      showLoader();
       try {
+        // Step 1: Fetch the secure presigned URL from your Render backend
         const r = await fetch(`${BASE_URL}/file/${encodeURIComponent(filename)}`, {
           method: "GET",
           headers: { "X-User": getAuthUser() }
         });
         const d = await r.json();
-        if(d.url) {
-          // Open the file inside a new mobile or desktop browser tab
-          const newWindow = window.open(d.url, '_blank');
+        
+        if (d.url) {
+          // Open the file inside a new mobile browser tab immediately for viewing
+          window.open(d.url, '_blank');
           
-          // Force execution download trigger across to phone/desktop local system storage
+          // Step 2: Fetch the file data directly as a Blob stream to bypass mobile download blocks
+          const fileResponse = await fetch(d.url);
+          const fileBlob = await fileResponse.blob();
+          
+          // Create a local temporary object link inside your phone memory
+          const blobUrl = window.URL.createObjectURL(fileBlob);
+          
+          // Trigger the device's native system download manager
           const downloadAnchor = document.createElement("a");
-          downloadAnchor.href = d.url;
+          downloadAnchor.href = blobUrl;
           downloadAnchor.download = filename;
           document.body.appendChild(downloadAnchor);
           downloadAnchor.click();
+          
+          // Clean up the memory storage
           document.body.removeChild(downloadAnchor);
-        } else { alert("File link expired or broken"); }
-      } catch(e) { alert("Download connection failed"); }
+          window.URL.revokeObjectURL(blobUrl);
+          hideLoader();
+        } else {
+          hideLoader();
+          alert("File link expired or broken");
+        }
+      } catch(e) {
+        hideLoader();
+        alert("Download connection failed or blocked by browser.");
+        console.error(e);
+      }
     }
 
     // DELETE FILE
