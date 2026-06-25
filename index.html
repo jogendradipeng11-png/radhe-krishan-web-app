@@ -88,8 +88,8 @@
       <div id="mainSection" class="main-section">
         <div class="card">
           <div class="card-title">Upload Documents (PDF, Excel, Images, Docs)</div>
-          <div class="input-group"><input type="file" id="fileInput"></div>
-          <div class="input-group"><input type="text" id="fileNameInput" placeholder="Save file as name (e.g. Invoice.pdf)"></div>
+          <div class="input-group"><input type="file" id="fileInput" multiple></div>
+          <div class="input-group"><input type="text" id="fileNameInput" placeholder="Save file as name (Ignored if uploading multiple)"></div>
           <button id="uploadBtn" class="btn-primary">Upload File</button>
           <p id="uploadStatus" style="font-size:12px; color:green;"></p>
         </div>
@@ -241,48 +241,70 @@
       }
     }
 
-    // UPLOAD FILE
-    document.getElementById("uploadBtn").onclick = async () => {
+    // UPDATED MULTI-UPLOAD LOGIC
+    async function executeFileUpload() {
       const fileInput = document.getElementById("fileInput");
       let customName = document.getElementById("fileNameInput").value.trim();
-      if(!fileInput.files.length) return alert("Select a file first");
-
-      const file = fileInput.files[0];
-      if(!customName) customName = file.name;
-      if(!customName.includes(".")) customName += "." + file.name.split('.').pop();
-
-      const renamedFile = new File([file], customName, { type: file.type });
-      const formData = new FormData();
-      formData.append("file", renamedFile);
+      if(!fileInput.files.length) return;
 
       showLoader();
-      try {
-        const r = await fetch(`${BASE_URL}/upload`, {
-          method: "POST",
-          headers: { 
-            "X-User": getAuthUser() 
-          },
-          body: formData
-        });
-        hideLoader();
-        if(r.ok) {
-          document.getElementById("uploadStatus").textContent = "File safely uploaded!";
-          fileInput.value = "";
-          document.getElementById("fileNameInput").value = "";
-          setTimeout(() => { document.getElementById("uploadStatus").textContent = ""; }, 3000);
-          loadFiles();
-        } else {
-          const errorData = await r.json();
-          alert("Upload failed: " + (errorData.error || "Server issue"));
+      let successCount = 0;
+      let totalFiles = fileInput.files.length;
+
+      // Loop through all selected files and upload them individually
+      for (let i = 0; i < totalFiles; i++) {
+        const file = fileInput.files[i];
+        let finalName = file.name;
+
+        // Apply custom name text field ONLY if a single file is selected
+        if (totalFiles === 1 && customName) {
+          finalName = customName;
+          if(!finalName.includes(".")) finalName += "." + file.name.split('.').pop();
         }
-      } catch(e) { hideLoader(); alert("Upload dropped due to connection issue."); }
-    };
+
+        const renamedFile = new File([file], finalName, { type: file.type });
+        const formData = new FormData();
+        formData.append("file", renamedFile);
+
+        try {
+          const r = await fetch(`${BASE_URL}/upload`, {
+            method: "POST",
+            headers: { 
+              "X-User": getAuthUser() 
+            },
+            body: formData
+          });
+          if(r.ok) {
+            successCount++;
+          } else {
+            console.error("Failed uploading: " + file.name);
+          }
+        } catch(e) { 
+          console.error("Connection error uploading: " + file.name); 
+        }
+      }
+
+      hideLoader();
+      
+      if(successCount > 0) {
+        document.getElementById("uploadStatus").textContent = `${successCount}/${totalFiles} file(s) safely uploaded!`;
+        fileInput.value = "";
+        document.getElementById("fileNameInput").value = "";
+        setTimeout(() => { document.getElementById("uploadStatus").textContent = ""; }, 4000);
+        loadFiles();
+      } else {
+        alert("Upload failed. Please check server connection.");
+      }
+    }
+
+    // Trigger upload on direct button click OR instantly upon picking files from gallery
+    document.getElementById("uploadBtn").onclick = executeFileUpload;
+    document.getElementById("fileInput").onchange = executeFileUpload;
 
     // OPEN/DOWNLOAD FILE VIA SIGNED S3 PIPELINE (FORCED BLOB STREAM DOWNLOAD)
     async function openFile(filename) {
       showLoader();
       try {
-        // Step 1: Fetch the secure presigned URL from your Render backend
         const r = await fetch(`${BASE_URL}/file/${encodeURIComponent(filename)}`, {
           method: "GET",
           headers: { "X-User": getAuthUser() }
@@ -290,24 +312,19 @@
         const d = await r.json();
         
         if (d.url) {
-          // Open the file inside a new mobile browser tab immediately for viewing
           window.open(d.url, '_blank');
           
-          // Step 2: Fetch the file data directly as a Blob stream to bypass mobile download blocks
           const fileResponse = await fetch(d.url);
           const fileBlob = await fileResponse.blob();
           
-          // Create a local temporary object link inside your phone memory
           const blobUrl = window.URL.createObjectURL(fileBlob);
           
-          // Trigger the device's native system download manager
           const downloadAnchor = document.createElement("a");
           downloadAnchor.href = blobUrl;
           downloadAnchor.download = filename;
           document.body.appendChild(downloadAnchor);
           downloadAnchor.click();
           
-          // Clean up the memory storage
           document.body.removeChild(downloadAnchor);
           window.URL.revokeObjectURL(blobUrl);
           hideLoader();
