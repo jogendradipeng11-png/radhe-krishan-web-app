@@ -196,44 +196,54 @@
       location.reload();
     };
 
-    // LOAD FILES 
-    async function loadFiles() {
-      const user = getAuthUser();
-      if (!user) return;
+// LOAD FILES (UPDATED FOR TIMESTAMPS AND EXPIRATION TRACKING)
+async function loadFiles() {
+  const user = getAuthUser();
+  if (!user) return;
 
-      try {
-        const r = await fetch(`${BASE_URL}/files`, {
-          method: "GET",
-          headers: { "X-User": user } // Custom Auth Identification Header
-        });
-        const files = await r.json();
-        const container = document.getElementById("filesList");
-        container.innerHTML = "";
+  try {
+    const r = await fetch(`${BASE_URL}/files`, {
+      method: "GET",
+      headers: { "X-User": user } // Custom Auth Identification Header
+    });
+    
+    const files = await r.json();
+    const container = document.getElementById("filesList");
+    container.innerHTML = "";
 
-        if(!files.length || files.error) {
-          container.innerHTML = "<p style='color:#888; text-align:center;'>No files found</p>";
-          return;
-        }
-
-        const filterText = document.getElementById("searchInput").value.toLowerCase();
-
-        files.forEach(name => {
-          if(!name.toLowerCase().includes(filterText)) return;
-
-          const row = document.createElement("div");
-          row.className = "file-item";
-          row.innerHTML = `
-            <div class="file-name">📄 ${name}</div>
-            <div class="file-actions">
-              <button class="btn-open" onclick="openFile('${name}')">Download</button>
-              <button class="btn-danger" onclick="deleteFile('${name}')">Delete</button>
-            </div>
-          `;
-          container.appendChild(row);
-        });
-      } catch(e) { console.error(e); }
+    if (!files || !files.length || files.error) {
+      container.innerHTML = "<p style='color:#888; text-align:center;'>No files found</p>";
+      return;
     }
 
+    const filterText = document.getElementById("searchInput").value.toLowerCase();
+
+    // Loop through the updated file objects array
+    files.forEach(file => {
+      // file.name contains the string name, file.uploadedAt contains the timestamp
+      if (!file.name.toLowerCase().includes(filterText)) return;
+
+      // Format the date/time beautifully based on your phone's local time setting
+      const uploadDate = new Date(file.uploadedAt).toLocaleString();
+
+      const row = document.createElement("div");
+      row.className = "file-item";
+      row.innerHTML = `
+        <div class="file-name" style="display: flex; flex-direction: column; gap: 2px;">
+          <span>📄 ${file.name}</span>
+          <span style="font-size: 11px; color: #b3b3b3;">Uploaded: ${uploadDate}</span>
+        </div>
+        <div class="file-actions">
+          <button class="btn-open" onclick="openFile('${file.name}')">Download</button>
+          <button class="btn-danger" onclick="deleteFile('${file.name}')">Delete</button>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  } catch(e) { 
+    console.error("Error loading files layout view:", e); 
+  }
+}
     // Locate this block inside your index.html file:
 document.getElementById("uploadBtn").onclick = async () => {
   const fileInput = document.getElementById("fileInput");
