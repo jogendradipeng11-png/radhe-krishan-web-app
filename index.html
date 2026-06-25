@@ -22,7 +22,7 @@
     }
     body.dark { background: var(--bg-dark); color: var(--text-dark); }
     .app-container { width: 100%; max-width: 520px; background: rgba(255, 255, 255, 0.96); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid var(--border-light); margin: 8px; min-height: calc(100vh - 16px); overflow: hidden; margin-bottom: 80px; }
-    body.dark .app-container { background: rgba(10, 10, 10, 0.96); border-color: var(--border-dark); }
+    .app-container { background: rgba(10, 10, 10, 0.96); border-color: var(--border-dark); }
     .header { background: linear-gradient(135deg, #ff7eb3, #ff758c, #ffb347); padding: 14px 12px; color: white; display: flex; align-items: center; gap: 10px; position: relative; }
     body.dark .header { background: linear-gradient(135deg, #000, #2b1b00, #8b6508); }
     .rk-image-wrap { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid white; }
@@ -278,7 +278,7 @@
       } catch(e) { hideLoader(); alert("Upload dropped due to connection issue."); }
     };
 
-    // OPEN/DOWNLOAD FILE VIA SIGNED S3 PIPELINE
+    // OPEN/DOWNLOAD FILE VIA SIGNED S3 PIPELINE (UPDATED FOR FORCED DIRECT SAVE)
     async function openFile(filename) {
       try {
         const r = await fetch(`${BASE_URL}/file/${encodeURIComponent(filename)}`, {
@@ -287,7 +287,16 @@
         });
         const d = await r.json();
         if(d.url) {
-          window.open(d.url, '_blank');
+          // Open the file inside a new mobile or desktop browser tab
+          const newWindow = window.open(d.url, '_blank');
+          
+          // Force execution download trigger across to phone/desktop local system storage
+          const downloadAnchor = document.createElement("a");
+          downloadAnchor.href = d.url;
+          downloadAnchor.download = filename;
+          document.body.appendChild(downloadAnchor);
+          downloadAnchor.click();
+          document.body.removeChild(downloadAnchor);
         } else { alert("File link expired or broken"); }
       } catch(e) { alert("Download connection failed"); }
     }
